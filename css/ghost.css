@@ -1,0 +1,918 @@
+/* =========================================
+   GHOST OS - FLUID RESPONSIVE THEME
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Nosifer&family=Butcherman&family=Rubik+Glitch&display=swap');
+
+:root {
+    --blood-red: #8B0000;
+    --dark-blood: #4A0000;
+    --ghost-white: #E8E8E8;
+    --void-black: #050505;
+    --sick-green: #4A5D23;
+    --toxic-purple: #4A0A4A;
+    --bone-white: #D4C5A9;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* 1. LOCK THE VIEWPORT (No scrolling allowed) */
+body {
+    background-color: var(--void-black);
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(139, 0, 0, 0.12) 0%, transparent 28%),
+        radial-gradient(circle at 80% 10%, rgba(74, 10, 74, 0.16) 0%, transparent 22%),
+        radial-gradient(circle at 50% 90%, rgba(74, 0, 0, 0.18) 0%, transparent 24%),
+        linear-gradient(180deg, #020202 0%, #090303 50%, #020202 100%);
+    color: var(--ghost-white);
+    font-family: 'Butcherman', cursive;
+    overflow: hidden; 
+    cursor: none;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+}
+
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    inset: -2%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::before {
+    background:
+        repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 28px),
+        repeating-linear-gradient(10deg, rgba(139, 0, 0, 0.06) 0 2px, transparent 2px 90px),
+        radial-gradient(circle at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+    mix-blend-mode: screen;
+    opacity: 0.55;
+    animation: scratchDrift 18s linear infinite;
+}
+
+body::after {
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255, 0, 0, 0.08), transparent 18%),
+        radial-gradient(circle at 85% 80%, rgba(74, 10, 74, 0.14), transparent 20%),
+        linear-gradient(90deg, transparent 0 48%, rgba(255, 255, 255, 0.04) 50%, transparent 52% 100%);
+    opacity: 0.75;
+    filter: blur(0.5px);
+    animation: bloodPulse 9s ease-in-out infinite;
+}
+
+/* =========================================
+   BACKGROUND EFFECTS
+   ========================================= */
+.horror-bg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -3;
+    background:
+        radial-gradient(ellipse at 20% 20%, rgba(74, 0, 74, 0.3) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(74, 0, 0, 0.3) 0%, transparent 50%),
+        linear-gradient(180deg, #050505 0%, #1A0A0A 50%, #050505 100%);
+    animation: bgPulse 8s ease-in-out infinite;
+}
+@keyframes bgPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+
+.scanlines {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 9990;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2) 1px, transparent 1px, transparent 2px);
+    pointer-events: none; animation: scanlineFlicker 0.1s infinite;
+}
+@keyframes scanlineFlicker { 0%, 100% { opacity: 0.8; } 50% { opacity: 0.9; } }
+
+/* =========================================
+   GHOST CURSOR
+   ========================================= */
+#ghost-cursor {
+    position: fixed; top: 0; left: 0; width: 50px; height: 50px;
+    transform: translate(-50%, -50%); pointer-events: none; z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.05s linear;
+}
+.cursor-dot {
+    width: 12px; height: 12px; border-radius: 50%; background: var(--blood-red);
+    box-shadow: 0 0 20px var(--blood-red), 0 0 40px var(--blood-red);
+}
+.progress-ring { position: absolute; width: 50px; height: 50px; }
+.progress-ring__circle {
+    stroke: var(--blood-red); stroke-width: 3; fill: transparent;
+    stroke-dasharray: 145; stroke-dashoffset: 145; transition: stroke-dashoffset 0.1s linear;
+}
+
+/* =========================================
+   SCREEN ROUTER (Transitions)
+   ========================================= */
+.screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.screen::before,
+.screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.screen::before {
+    background:
+        radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.03), transparent 32%),
+        repeating-linear-gradient(145deg, transparent 0 27px, rgba(255, 255, 255, 0.025) 28px 29px, transparent 30px 84px),
+        repeating-linear-gradient(35deg, rgba(139, 0, 0, 0.03) 0 2px, transparent 2px 120px);
+    opacity: 0.35;
+}
+.screen::after {
+    box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.9);
+}
+.hidden-screen { opacity: 0; pointer-events: none; transform: translateY(20px); z-index: 1; }
+.active-screen { opacity: 1; pointer-events: auto; transform: translateY(0); z-index: 10; }
+
+/* =========================================
+   UNIVERSAL BUTTONS
+   ========================================= */
+.ghost-btn {
+    font-family: 'Creepster', cursive; text-transform: uppercase;
+    background: transparent; border: 2px solid var(--blood-red); color: var(--blood-red);
+    cursor: none; outline: none; position: relative;
+    background: linear-gradient(180deg, rgba(14, 14, 14, 0.88), rgba(5, 5, 5, 0.92));
+    backdrop-filter: blur(5px);
+    overflow: hidden;
+    box-shadow: 
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+        0 10px 30px rgba(0, 0, 0, 0.2),
+        inset 0 0 20px rgba(139, 0, 0, 0.3),
+        0 0 40px rgba(139, 0, 0, 0.2);
+    isolation: isolate;
+    animation: buttonCorruption 3s ease-in-out infinite;
+    transition: all 0.2s ease;
+}
+
+@keyframes buttonCorruption {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(255, 0, 0, 0.5), -2px -2px 0 rgba(139, 0, 0, 0.8);
+        transform: translate(0, 0);
+    }
+    25% {
+        text-shadow: -3px 0 10px rgba(255, 0, 0, 0.6), 3px -2px 0 rgba(139, 0, 0, 0.9);
+        transform: translate(-1px, 1px);
+    }
+    50% {
+        text-shadow: 2px 0 10px rgba(255, 0, 0, 0.4), -2px 2px 0 rgba(200, 0, 0, 0.7);
+        transform: translate(1px, -1px);
+    }
+    75% {
+        text-shadow: -2px -2px 10px rgba(255, 0, 0, 0.5), 2px 0 0 rgba(139, 0, 0, 0.8);
+        transform: translate(-1px, -1px);
+    }
+}
+
+.ghost-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 0 46%, rgba(255, 0, 0, 0.25) 48%, transparent 52% 100%);
+    mix-blend-mode: screen;
+    opacity: 0.3;
+    transform: translateX(-8%);
+    pointer-events: none;
+    animation: glitchFlash 2s ease-in-out infinite;
+}
+
+.ghost-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        repeating-linear-gradient(90deg, rgba(255, 0, 0, 0.08) 0 1px, transparent 1px 7px),
+        repeating-linear-gradient(0deg, rgba(139, 0, 0, 0.1) 0 2px, transparent 2px 4px);
+    opacity: 0.5;
+    pointer-events: none;
+    animation: scanCorruption 0.3s steps(5, end) infinite;
+}
+
+@keyframes glitchFlash {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes scanCorruption {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+.ghost-btn:hover, .ghost-btn.stared-at {
+    background: linear-gradient(180deg, rgba(139, 0, 0, 0.6), rgba(74, 0, 0, 0.8));
+    color: #ff6666;
+    border-color: #ff4444;
+    box-shadow: 
+        0 0 30px rgba(255, 0, 0, 0.8),
+        0 0 0 3px rgba(139, 0, 0, 0.4) inset,
+        inset 0 0 30px rgba(255, 0, 0, 0.4);
+    transform: scale(1.05) skewX(-3deg);
+    animation: buttonCorruptionIntense 0.6s ease-in-out infinite;
+}
+
+@keyframes buttonCorruptionIntense {
+    0%, 100% {
+        text-shadow: -3px 0 15px rgba(255, 0, 0, 0.9), 3px -3px 0 rgba(200, 0, 0, 0.9);
+        transform: translate(0, 0) skewX(-3deg);
+    }
+    25% {
+        text-shadow: -5px -2px 15px rgba(255, 0, 0, 1), 5px 0 0 rgba(139, 0, 0, 0.9);
+        transform: translate(-2px, 2px) skewX(-2deg);
+    }
+    50% {
+        text-shadow: 3px 0 15px rgba(255, 0, 0, 0.8), -3px 3px 0 rgba(255, 100, 100, 0.9);
+        transform: translate(2px, -2px) skewX(-4deg);
+    }
+    75% {
+        text-shadow: -4px -3px 15px rgba(255, 0, 0, 0.85), 4px 1px 0 rgba(150, 0, 0, 0.9);
+        transform: translate(-1px, -2px) skewX(-3deg);
+    }
+}
+
+.back-btn { position: absolute; top: 20px; left: 20px; padding: 10px 20px; font-size: 1rem; color: var(--toxic-purple); border-color: var(--toxic-purple); z-index: 100; }
+.void-flee-btn {
+    position: fixed;
+    top: auto;
+    left: 20px;
+    bottom: 20px;
+    right: auto;
+    padding: 12px 22px;
+    z-index: 120;
+}
+.kill-switch { margin-top: 30px; padding: 15px 30px; font-size: 1.2rem; color: #00ff00; border-color: #00ff00; }
+
+/* =========================================
+   BASE LAYOUTS (Desktop Default)
+   ========================================= */
+/* Hub */
+.hub-header { text-align: center; margin-bottom: 36px; width: 100%; position: relative; }
+.hub-header::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(860px, 92vw);
+    height: 150px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(139, 0, 0, 0.18) 0%, transparent 70%);
+    filter: blur(18px);
+    pointer-events: none;
+}
+.hub-status-strip {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 197, 169, 0.22);
+    background: rgba(0, 0, 0, 0.78);
+    color: var(--bone-white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset, 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+.status-pill--red {
+    border-color: rgba(255, 0, 0, 0.4);
+    color: #ffb7b7;
+    box-shadow: 0 0 18px rgba(255, 0, 0, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+.glitch-title { font-family: 'Nosifer', cursive; font-size: 4rem; color: var(--blood-red); margin: 0; text-shadow: 0 0 20px var(--blood-red); }
+.glitch-title {
+    position: relative;
+    display: inline-block;
+    animation: titleFlicker 4.5s infinite steps(1, end);
+    letter-spacing: 0.08em;
+}
+.glitch-title::before,
+.glitch-title::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+}
+.glitch-title::before {
+    transform: translate(3px, -1px);
+    color: #00ffff;
+    mix-blend-mode: screen;
+    clip-path: inset(0 0 52% 0);
+}
+.glitch-title::after {
+    transform: translate(-3px, 1px);
+    color: #ff0033;
+    mix-blend-mode: screen;
+    clip-path: inset(48% 0 0 0);
+}
+.subtitle { font-family: 'Rubik Glitch', cursive; color: var(--toxic-purple); font-size: 1.2rem; margin-top: 10px; letter-spacing: 5px; text-shadow: 0 0 12px rgba(74, 10, 74, 0.7); }
+
+/* Flexbox wrapping allows items to flow to the next line naturally */
+.hub-grid { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1080px; }
+.app-card {
+    width: 280px; height: 300px; display: flex; flex-direction: column; 
+    align-items: center; justify-content: center; padding: 24px; text-align: center;
+    border-radius: 18px;
+    background:
+        linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(6, 6, 6, 0.98)),
+        radial-gradient(circle at 20% 20%, rgba(255, 0, 0, 0.15), transparent 22%),
+        radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.25), transparent 30%);
+    border: 2px solid rgba(139, 0, 0, 0.4);
+    box-shadow: 
+        0 22px 60px rgba(0, 0, 0, 0.52), 
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 0 30px rgba(139, 0, 0, 0.2),
+        0 0 40px rgba(139, 0, 0, 0.15);
+    overflow: hidden;
+    position: relative;
+    clip-path: polygon(0 0, 96% 0, 100% 10%, 100% 100%, 4% 100%, 0 90%);
+    animation: cardPulse 4s ease-in-out infinite;
+}
+
+@keyframes cardPulse {
+    0%, 100% {
+        box-shadow: 
+            0 22px 60px rgba(0, 0, 0, 0.52),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+            inset 0 0 30px rgba(139, 0, 0, 0.2),
+            0 0 40px rgba(139, 0, 0, 0.15);
+    }
+    50% {
+        box-shadow: 
+            0 22px 60px rgba(0, 0, 0, 0.52),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+            inset 0 0 40px rgba(139, 0, 0, 0.4),
+            0 0 60px rgba(255, 0, 0, 0.3);
+    }
+}
+
+.app-card::before,
+.app-card::after {
+    content: '';
+    position: absolute;
+    inset: -10%;
+    pointer-events: none;
+}
+.app-card::before {
+    background:
+        repeating-linear-gradient(126deg, transparent 0 38px, rgba(255, 0, 0, 0.12) 40px 41px, transparent 42px 84px),
+        repeating-linear-gradient(15deg, rgba(255, 0, 0, 0.08) 0 1px, transparent 1px 16px),
+        linear-gradient(25deg, transparent 0 49%, rgba(255, 0, 0, 0.12) 50%, transparent 51% 100%);
+    opacity: 0.5;
+    transform: rotate(-2deg);
+    animation: scratchDrift 8s linear infinite;
+}
+.app-card::after {
+    background: radial-gradient(circle at 50% 50%, transparent 36%, rgba(0, 0, 0, 0.5) 100%);
+}
+.app-card:hover {
+    transform: translateY(-8px) scale(1.05) rotate(-1deg);
+    border-color: rgba(255, 0, 0, 0.6);
+    box-shadow: 
+        0 26px 70px rgba(0, 0, 0, 0.7), 
+        0 0 60px rgba(255, 0, 0, 0.4),
+        inset 0 0 40px rgba(139, 0, 0, 0.3);
+    animation: cardPulseIntense 0.8s ease-in-out infinite;
+}
+
+@keyframes cardPulseIntense {
+    0%, 100% {
+        text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+        transform: translateY(-8px) scale(1.05) rotate(-1deg);
+    }
+    50% {
+        text-shadow: -2px 0 15px rgba(255, 0, 0, 0.8), 2px -2px 0 rgba(139, 0, 0, 0.8);
+        transform: translateY(-8px) scale(1.06) rotate(0deg);
+    }
+}
+.card-icon { font-size: 3.8rem; margin-bottom: 15px; }
+.app-card h3 { font-family: 'Creepster', cursive; font-size: 2rem; margin-bottom: 5px; color: var(--ghost-white); }
+.app-card p { font-family: 'Butcherman', cursive; font-size: 1.05rem; color: var(--bone-white); letter-spacing: 0.05em; }
+
+/* Terminal */
+.terminal-panel { width: 80%; max-width: 900px; padding: 30px; display: flex; flex-direction: column; gap: 20px; border: 1px solid var(--sick-green); background: rgba(0,0,0,0.8); border-radius: 10px; }
+.terminal-panel--clean {
+    border-color: rgba(74, 93, 35, 0.55);
+    background: linear-gradient(180deg, rgba(7, 9, 8, 0.96), rgba(0, 0, 0, 0.82));
+    border-radius: 24px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(74, 93, 35, 0.18) inset;
+    position: relative;
+    overflow: hidden;
+}
+.terminal-panel--clean::before {
+    content: '';
+    position: absolute;
+    inset: -8%;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(132deg, transparent 0 54px, rgba(255, 255, 255, 0.05) 55px 56px, transparent 57px 140px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 18px);
+    opacity: 0.25;
+}
+.terminal-panel--clean > * {
+    position: relative;
+    z-index: 1;
+}
+.panel-header { display: flex; justify-content: space-between; border-bottom: 1px solid var(--sick-green); padding-bottom: 10px; }
+.panel-header h2 { font-family: 'Creepster', cursive; color: var(--sick-green); font-size: 1.5rem; }
+#terminal-output {
+    height: 40vh;
+    padding: 18px;
+    overflow-y: auto;
+    color: var(--sick-green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    background: linear-gradient(180deg, rgba(0,0,0,0.92), rgba(2, 10, 5, 0.88));
+    border: 1px solid rgba(74, 93, 35, 0.45);
+    border-radius: 18px;
+    box-shadow: inset 0 0 0 1px rgba(0, 255, 120, 0.03);
+    position: relative;
+    overflow: hidden;
+}
+#terminal-output::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(120deg, transparent 0 42px, rgba(255, 255, 255, 0.03) 43px 44px, transparent 45px 96px),
+        radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.04), transparent 25%),
+        radial-gradient(circle at 80% 70%, rgba(139, 0, 0, 0.08), transparent 28%);
+    opacity: 0.38;
+}
+.pulse-btn { padding: 20px; font-size: 1.5rem; color: var(--sick-green); border-color: var(--sick-green); width: 100%; }
+
+.terminal-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.terminal-chip-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.terminal-chip {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+}
+.terminal-volume {
+    min-width: 220px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--bone-white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+}
+
+/* Studio */
+.studio-header { text-align: center; margin-bottom: 30px; }
+.neon-pink-text { font-family: 'Nosifer', cursive; font-size: 2.5rem; color: var(--toxic-purple); text-shadow: 0 0 20px var(--toxic-purple); }
+.studio-instructions { background: rgba(0,0,0,0.8); border: 1px solid var(--toxic-purple); padding: 10px; margin-top: 10px; font-size: 0.9rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+.studio-instructions {
+    background:
+        linear-gradient(180deg, rgba(10, 10, 10, 0.96), rgba(0, 0, 0, 0.85)),
+        repeating-linear-gradient(125deg, transparent 0 42px, rgba(255, 255, 255, 0.03) 43px 44px, transparent 45px 90px);
+    border: 1px solid rgba(255, 0, 255, 0.25);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 16px 50px rgba(0, 0, 0, 0.35);
+}
+.studio-scene-switcher,
+.void-mode-switcher {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 14px 0 6px;
+}
+.studio-scene-btn,
+.void-mode-btn {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+}
+.studio-scene-btn.is-active,
+.void-mode-btn.is-active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+}
+.studio-hud { border: 1px solid var(--sick-green); padding: 10px; margin-bottom: 30px; font-size: 1.2rem; }
+.synth-nodes { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
+.node-wrapper { width: 120px; height: 120px; position: relative; display: flex; align-items: center; justify-content: center; }
+.synth-node { width: 100px; height: 100px; border-radius: 50%; font-size: 1rem; border: 2px solid; background: #000; }
+.node-ring { position: absolute; width: 100%; height: 100%; border: 1px dashed rgba(255,255,255,0.3); border-radius: 50%; animation: spin 10s linear infinite; pointer-events: none;}
+
+.audio-console {
+    width: min(960px, 94vw);
+    margin-top: 26px;
+    padding: 18px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    background:
+        linear-gradient(180deg, rgba(8, 8, 8, 0.9), rgba(0, 0, 0, 0.7)),
+        radial-gradient(circle at top, rgba(139, 0, 0, 0.22), transparent 45%);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 22px 72px rgba(0, 0, 0, 0.42);
+    position: relative;
+    overflow: hidden;
+}
+.audio-console::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(140deg, transparent 0 36px, rgba(255, 255, 255, 0.04) 37px 38px, transparent 39px 86px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 16px),
+        radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.7) 100%);
+    opacity: 0.38;
+}
+.audio-console__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.12em;
+}
+.audio-console__label { color: var(--bone-white); }
+.audio-console__value { color: #fff; }
+.audio-console__hint { margin-top: 10px; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; color: rgba(212, 197, 169, 0.8); }
+
+.volume-slider {
+    width: 100%;
+    accent-color: #ffffff;
+    height: 28px;
+}
+.volume-slider--compact { width: 160px; height: 22px; }
+
+.void-hud-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+.void-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    border-radius: 999px;
+    text-transform: uppercase;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+
+/* Void */
+.vignette { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent 10%, #000 90%); pointer-events: none; }
+.blood-title { 
+    font-family: 'Nosifer', cursive; 
+    font-size: 3rem; 
+    color: var(--dark-blood); 
+    text-shadow: 
+        0 0 20px red, 
+        -2px -2px 10px rgba(255,0,0,0.6),
+        2px 2px 10px rgba(139,0,0,0.8);
+    z-index: 5; 
+    text-align: center;
+    animation: bloodPulseTitle 2s ease-in-out infinite;
+    letter-spacing: 2px;
+}
+
+@keyframes bloodPulseTitle {
+    0%, 100% {
+        text-shadow: 
+            0 0 20px red,
+            -2px -2px 10px rgba(255,0,0,0.6),
+            2px 2px 10px rgba(139,0,0,0.8);
+        transform: scale(1);
+    }
+    50% {
+        text-shadow: 
+            0 0 40px #ff3333,
+            -3px -3px 15px rgba(255,0,0,0.9),
+            3px 3px 15px rgba(200,0,0,0.9);
+        transform: scale(1.05);
+    }
+}
+#void-objective {
+    position: static;
+    color: var(--sick-green);
+    border: 1px solid var(--sick-green);
+    padding: 10px 15px;
+    z-index: 10;
+    background: #000;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+/* THE INVISIBLE DOOR (Much smaller, opens when stared at) */
+.anomaly-node {
+    width: 80px; 
+    height: 120px; 
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="130" fill="rgba(0,255,255,0.1)" stroke="%23fff" stroke-width="3" stroke-dasharray="10 5"/></svg>') no-repeat center center;
+    background-size: contain;
+    opacity: 0.01; /* 100% INVISIBLE TO THE NAKED EYE */
+    position: absolute; 
+    z-index: 50;
+    transition: opacity 0.3s;
+    border: none;
+    box-shadow: none;
+}
+
+/* 3D Door Opening Animation when pointer is on it */
+.anomaly-node.stared-at {
+    opacity: 1; 
+    box-shadow: 0 0 40px #00ffff, inset 0 0 20px #00ffff;
+    background-color: rgba(0, 255, 255, 0.4);
+    animation: doorOpen 1s forwards;
+}
+
+@keyframes doorOpen {
+    0% { transform: perspective(400px) rotateY(0deg) scale(1); }
+    100% { transform: perspective(400px) rotateY(-35deg) scale(1.1); }
+}
+
+/* THE FINAL ESCAPE BUTTON (Fixed so it actually works) */
+.hidden-door {
+    position: absolute; 
+    transform: translate(-50%, -50%);
+    padding: 15px 30px; /* Drastically decreased size */
+    font-size: 1.5rem; /* Drastically decreased size */
+    font-family: 'Nosifer', cursive;
+    background: rgba(0, 0, 0, 0.95); 
+    border: 2px solid red; 
+    color: red;
+    opacity: 1 !important; 
+    z-index: 9999; 
+    box-shadow: 0 0 20px red;
+    text-align: center;
+    /* The transition speed makes the dodging look fast but smooth */
+    transition: left 0.15s ease-out, top 0.15s ease-out, background 0.3s, color 0.3s, transform 0.3s;
+}
+.hidden-door.stared-at {
+    background: red; 
+    color: black; 
+    transform: translate(-50%, -50%) scale(1.1);
+}
+.hidden-door::before {
+    background: repeating-linear-gradient(135deg, rgba(255,255,255,0.35) 0 1px, transparent 1px 8px);
+    opacity: 0.12;
+}
+.hidden-eyes { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 80px; opacity: 0; pointer-events: none; z-index: 9999; }
+.hidden-eyes.active { opacity: 1; }
+.eye { width: 60px; height: 30px; background: radial-gradient(circle, #fff 10%, #f00 40%, #300 80%); border-radius: 50%; box-shadow: 0 0 40px red; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes scratchDrift {
+    0% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(-1.5%, 1%, 0); }
+    100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes bloodPulse {
+    0%, 100% { opacity: 0.68; }
+    50% { opacity: 0.92; }
+}
+@keyframes titleFlicker {
+    0%, 100% { filter: none; opacity: 1; }
+    7% { filter: brightness(1.4) contrast(1.1); }
+    8% { opacity: 0.72; }
+    9% { opacity: 1; }
+    31% { filter: hue-rotate(15deg); }
+    32% { transform: translateX(-1px); }
+    33% { transform: translateX(1px); }
+    69% { filter: brightness(1.05) contrast(1.2); }
+    70% { opacity: 0.84; }
+    71% { opacity: 1; }
+}
+
+/* =========================================
+   MEDIA QUERIES (THE MAGIC SAUCE)
+   ========================================= */
+
+/* 💻 Medium Screens & Small Laptops (Max Width: 1024px) */
+@media screen and (max-width: 1024px) {
+    .glitch-title { font-size: 3.5rem; }
+    .app-card { width: 220px; height: 250px; }
+    .synth-nodes { gap: 20px; }
+    .terminal-panel { width: 95%; }
+}
+
+/* 📱 Tablets (Max Width: 768px) */
+@media screen and (max-width: 768px) {
+    .glitch-title { font-size: 2.8rem; }
+    .subtitle { font-size: 1rem; }
+    .app-card { width: 180px; height: 200px; padding: 15px; }
+    .card-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .app-card h3 { font-size: 1.4rem; }
+    
+    .terminal-panel { padding: 20px; }
+    #terminal-output { height: 45vh; font-size: 1rem; }
+    .pulse-btn { padding: 15px; font-size: 1.2rem; }
+
+    .neon-pink-text { font-size: 2rem; }
+    .node-wrapper { width: 100px; height: 100px; }
+    .synth-node { width: 80px; height: 80px; font-size: 0.8rem; }
+    .terminal-chip { font-size: 0.75rem; padding: 8px 12px; }
+    .terminal-volume { min-width: 100%; }
+    .volume-slider--compact { width: 100%; }
+    
+    .blood-title { font-size: 2rem; }
+    .hidden-door { font-size: 1.5rem; padding: 15px 30px; }
+}
+
+/* 📱 Mobile Phones (Max Width: 480px) */
+@media screen and (max-width: 480px) {
+    .screen { padding: 10px; }
+    .glitch-title { font-size: 2rem; }
+    .subtitle { font-size: 0.8rem; letter-spacing: 2px; }
+    
+    /* On tiny screens, make cards span almost the full width so they stack vertically */
+    .app-card { width: 90%; max-width: 300px; height: 140px; flex-direction: row; gap: 15px; text-align: left; }
+    .card-icon { margin-bottom: 0; font-size: 2.5rem; }
+    
+    .back-btn { top: 10px; left: 10px; padding: 8px 12px; font-size: 0.8rem; }
+    .void-flee-btn { left: 10px; bottom: 10px; padding: 8px 12px; }
+    .kill-switch { padding: 10px 20px; font-size: 1rem; margin-top: 15px; }
+
+    #terminal-output { height: 40vh; font-size: 0.9rem; }
+    .panel-header h2 { font-size: 1.2rem; }
+    .terminal-toolbar { gap: 12px; }
+    .terminal-chip-row { gap: 8px; }
+
+    .neon-pink-text { font-size: 1.5rem; }
+    .studio-instructions { font-size: 0.7rem; }
+    .synth-nodes { gap: 10px; }
+    .node-wrapper { width: 80px; height: 80px; }
+    .synth-node { width: 65px; height: 65px; font-size: 0.7rem; border-width: 1px;}
+
+    #void-objective { font-size: 0.7rem; padding: 6px 10px; }
+    .blood-title { font-size: 1.5rem; }
+    .hidden-eyes { gap: 40px; }
+    .eye { width: 40px; height: 20px; }
+}
+
+/* ↕️ Short Screens (Landscape phones / cramped browser windows) */
+@media screen and (max-height: 600px) {
+    .hub-header { margin-bottom: 10px; }
+    .glitch-title { font-size: 2.5rem; }
+    .app-card { height: 120px; flex-direction: row; gap: 10px;}
+    .card-icon { font-size: 2rem; margin-bottom: 0;}
+    #terminal-output { height: 35vh; }
+    .audio-console { margin-top: 14px; }
+    /* REMOVED the line that hid the studio instructions! */
+}
+
+/* =========================================
+   STUDIO LAYOUT FIXES (Fits all screens)
+   ========================================= */
+@media screen and (max-height: 800px) {
+    .studio-header h2 { font-size: clamp(1.5rem, 4vh, 2.5rem) !important; }
+    .studio-instructions { 
+        padding: 10px !important; margin: 10px auto !important; 
+        font-size: clamp(0.8rem, 2vh, 1rem) !important; 
+    }
+    .synth-nodes { gap: clamp(10px, 2vh, 20px) !important; }
+    .node-wrapper { 
+        width: clamp(70px, 12vh, 100px) !important; 
+        height: clamp(70px, 12vh, 100px) !important; 
+    }
+    .synth-node { 
+        width: clamp(60px, 10vh, 90px) !important; 
+        height: clamp(60px, 10vh, 90px) !important; 
+        font-size: 0.8rem !important;
+    }
+}
+
+.developer-credit {
+    position: fixed;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    font-family: 'Butcherman', cursive;
+    font-size: 0.85rem;
+    color: var(--bone-white);
+    text-shadow: 0 0 10px var(--blood-red);
+    z-index: 1000;
+    pointer-events: none;
+    text-align: center;
+    width: calc(100% - 20px);
+}
+
+/* =========================================
+   THE VOID: SANITY & POPUP UI
+   ========================================= */
+.sanity-container {
+    font-family: 'Share Tech Mono', monospace; 
+    font-size: 1.2rem; text-shadow: 0 0 10px red;
+}
+.sanity-bar-bg {
+    width: 200px; height: 15px; 
+    background: rgba(255,0,0,0.1); 
+    border: 1px solid var(--blood-red);
+}
+.sanity-bar {
+    width: 100%; height: 100%; 
+    background: #ff0000; 
+    box-shadow: 0 0 15px red;
+    transition: width 0.1s linear, background 0.3s;
+}
+
+.hidden-popup {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Nosifer', cursive; font-size: clamp(2rem, 6vw, 5rem);
+    color: #fff; text-shadow: 0 0 30px red, 0 0 50px darkred;
+    opacity: 0; pointer-events: none; z-index: 9000;
+    text-align: center; transition: opacity 0.5s;
+}
+.hidden-popup.show {
+    opacity: 1;
+}
+
+@media screen and (max-width: 768px) {
+    .sanity-bar-bg { width: 120px; height: 10px; }
+}
+
+/* THE SCARY GHOST ANIMATION */
+.creepy-ghost-face {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 100vw; height: 100vh; /* Fills the whole screen! */
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="80" r="15" fill="red" filter="blur(4px)"/><circle cx="130" cy="80" r="15" fill="red" filter="blur(4px)"/><path d="M 70 140 Q 100 180 130 140" fill="black" stroke="red" stroke-width="6" filter="blur(2px)"/></svg>') no-repeat center center;
+    background-size: cover;
+    opacity: 0; filter: blur(20px); pointer-events: none; z-index: 5000;
+}
+.creepy-ghost-face.manifest {
+    opacity: 0.9; filter: blur(0px); mix-blend-mode: screen;
+    animation: scaryGlitch 0.2s infinite; /* Extreme rapid glitch */
+}
+@keyframes scaryGlitch { 
+    0% {transform: translate(-50%, -50%) scale(1) skewX(0deg); filter: hue-rotate(0deg);} 
+    33% {transform: translate(-48%, -52%) scale(1.2) skewX(10deg); filter: hue-rotate(45deg) invert(1);} 
+    66% {transform: translate(-52%, -48%) scale(1.5) skewX(-10deg); filter: hue-rotate(-45deg);} 
+    100% {transform: translate(-50%, -50%) scale(1.1) skewX(0deg); filter: hue-rotate(0deg);} 
+}
+
+/* =========================================
+   GHOST MIRROR (HAUNTED WEBCAM FEED)
+   ========================================= */
+#input_video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -2; /* Behind the UI, but above the black background */
+    pointer-events: none;
+
+    /* The Horror Filter: Black & White, High Contrast */
+    filter: grayscale(100%) contrast(150%) brightness(0.6);
+
+    /* CRITICAL: Mirrors the camera so it acts like a real reflection */
+    transform: scaleX(-1);
+
+    opacity: 0;
+    transition: opacity 3s ease-in-out; /* Super slow, creepy fade-in */
+}
+
+/* When the user clicks "Reveal Reality" */
+#input_video.show-feed {
+    opacity: 0.12; /* Very faint and ghostly */
+}
+
+/* Pulse animation for the headphone warning */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
