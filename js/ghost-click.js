@@ -1,11 +1,12 @@
 let hoverTimer = 0;
-// INCREASED threshold so it takes ~2 seconds to click. No more accidental clicks!
-const clickThreshold = 40; 
+// Adjust click threshold based on device - faster on mobile for better UX
+const isMobile = window.innerWidth < 768;
+const clickThreshold = isMobile ? 30 : 40; // Faster clicks on mobile
 let currentlyHoveredElement = null;
-let justClickedElement = null; 
+let justClickedElement = null;
 
 const circle = document.querySelector('.progress-ring__circle');
-const circumference = 23 * 2 * Math.PI; 
+const circumference = isMobile ? 18 * 2 * Math.PI : 23 * 2 * Math.PI; 
 
 setInterval(() => {
     const elementUnderCursor = document.elementFromPoint(window.ghostX, window.ghostY);

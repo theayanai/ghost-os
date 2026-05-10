@@ -31,11 +31,19 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
-// Mobile Touch Drag Fallback
+// Mobile Touch Drag Fallback - Improved for better mobile experience
 document.addEventListener('touchmove', (e) => {
     if (!isAITracking && e.touches.length > 0) {
-        // Prevent screen scrolling while dragging the cursor
-        e.preventDefault(); 
+        // Only prevent default if we're not on a scrollable element
+        const target = e.target;
+        const isScrollable = target.closest('#terminal-output') ||
+                            target.closest('.studio-instructions') ||
+                            target.closest('#void-intro');
+
+        if (!isScrollable) {
+            e.preventDefault();
+        }
+
         window.ghostX = e.touches[0].clientX;
         window.ghostY = e.touches[0].clientY;
         ghostCursor.style.left = window.ghostX + 'px';
@@ -43,6 +51,17 @@ document.addEventListener('touchmove', (e) => {
         if (ghostCursor.style.opacity === '0' || ghostCursor.style.display === 'none') showGhostCursor();
     }
 }, { passive: false });
+
+// Mobile Touch Start - Update cursor position on tap
+document.addEventListener('touchstart', (e) => {
+    if (!isAITracking && e.touches.length > 0) {
+        window.ghostX = e.touches[0].clientX;
+        window.ghostY = e.touches[0].clientY;
+        ghostCursor.style.left = window.ghostX + 'px';
+        ghostCursor.style.top = window.ghostY + 'px';
+        if (ghostCursor.style.opacity === '0' || ghostCursor.style.display === 'none') showGhostCursor();
+    }
+}, { passive: true });
 
 // ============================================================
 // GESTURE MATH (ULTRA-STABLE)
@@ -64,7 +83,16 @@ function isPointing(hand) {
 // 1. HANDS AI
 // ============================================================
 const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+// Detect if we're on mobile for optimized settings
+const isMobile = window.innerWidth < 768;
+
+hands.setOptions({
+    maxNumHands: 1,
+    modelComplexity: isMobile ? 0 : 1, // Use lighter model on mobile
+    minDetectionConfidence: isMobile ? 0.6 : 0.5, // Higher confidence threshold on mobile
+    minTrackingConfidence: isMobile ? 0.6 : 0.5
+});
 
 let lastHandSeen = Date.now();
 hands.onResults((results) => {
@@ -93,7 +121,16 @@ hands.onResults((results) => {
 // 2. FACE AI
 // ============================================================
 const faceMesh = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
-faceMesh.setOptions({ maxNumFaces: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+
+// Detect if we're on mobile for optimized settings
+const isMobileFace = window.innerWidth < 768;
+
+faceMesh.setOptions({
+    maxNumFaces: 1,
+    minDetectionConfidence: isMobileFace ? 0.6 : 0.5,
+    minTrackingConfidence: isMobileFace ? 0.6 : 0.5,
+    refineLandmarks: true // Enable refined landmarks for better nose tracking
+});
 
 let lastFaceSeen = Date.now();
 faceMesh.onResults((results) => {
@@ -101,8 +138,17 @@ faceMesh.onResults((results) => {
         if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
             isAITracking = true;
             lastFaceSeen = Date.now();
-            const nose = results.multiFaceLandmarks[0][1];
-            updateCursor((1 - nose.x), nose.y);
+
+            // Use multiple landmarks for more stable tracking
+            const face = results.multiFaceLandmarks[0];
+            const noseTip = face[1]; // Nose tip
+            const noseBridge = face[6]; // Nose bridge
+
+            // Average the nose tip and bridge for more stable tracking
+            const avgX = (noseTip.x + noseBridge.x) / 2;
+            const avgY = (noseTip.y + noseBridge.y) / 2;
+
+            updateCursor((1 - avgX), avgY);
             showGhostCursor();
         } else {
             // If face is lost, release control back to mouse
@@ -117,19 +163,31 @@ faceMesh.onResults((results) => {
 function updateCursor(rawX, rawY) {
     let targetX = rawX * window.innerWidth;
     let targetY = rawY * window.innerHeight;
-    
+
     // Calculate speed of movement
     let dx = targetX - window.ghostX;
     let dy = targetY - window.ghostY;
     let distance = Math.sqrt(dx*dx + dy*dy);
-    
-    let smoothing = 0.5; // Default smooth
-    if (distance > 100) smoothing = 0.2; // Move fast = less smoothing (snappy)
-    if (distance < 20) smoothing = 0.8;  // Move slow = high smoothing (stable for clicking)
+
+    // Detect if we're on mobile for more responsive tracking
+    const isMobile = window.innerWidth < 768;
+
+    let smoothing;
+    if (isMobile) {
+        // More responsive tracking on mobile
+        if (distance > 150) smoothing = 0.15; // Very fast for large movements
+        else if (distance > 50) smoothing = 0.25; // Fast for medium movements
+        else smoothing = 0.4; // Less smoothing for precision
+    } else {
+        // Desktop settings
+        if (distance > 100) smoothing = 0.2;
+        else if (distance < 20) smoothing = 0.8;
+        else smoothing = 0.5;
+    }
 
     window.ghostX = (window.ghostX * smoothing) + (targetX * (1 - smoothing));
     window.ghostY = (window.ghostY * smoothing) + (targetY * (1 - smoothing));
-    
+
     ghostCursor.style.left = window.ghostX + 'px';
     ghostCursor.style.top = window.ghostY + 'px';
 }
@@ -147,6 +205,10 @@ function showGhostCursor() {
 
 function startCamera() {
     if (!camera) {
+        // Detect if we're on mobile and adjust camera settings
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isPortrait = window.innerHeight > window.innerWidth;
+
         camera = new Camera(videoElement, {
             onFrame: async () => {
                 if (!isCameraActive) return;
@@ -157,7 +219,11 @@ function startCamera() {
                     console.error('Tracking error:', e);
                 }
             },
-            width: 640, height: 480
+            // Use higher resolution for better tracking on mobile
+            width: isMobile && isPortrait ? 720 : 640,
+            height: isMobile && isPortrait ? 1280 : 480,
+            // Use front camera by default
+            facingMode: 'user'
         });
     }
 
@@ -166,9 +232,76 @@ function startCamera() {
         camToggleBtn.textContent = '🛑 Turn Off Camera';
         camToggleBtn.style.borderColor = 'var(--blood-red)';
         camToggleBtn.style.color = 'var(--blood-red)';
+
+        // Show a toast message on mobile
+        if (window.innerWidth < 768) {
+            showToast('Camera active! Use nose/finger to control cursor');
+            showMobileHelpIfNeeded();
+        }
     }).catch(err => {
         console.error('Camera failed to start:', err);
+        showToast('Camera access denied. Using touch controls instead.');
     });
+}
+
+// Simple toast notification function
+function showToast(message) {
+    const existingToast = document.querySelector('.ghost-toast');
+    if (existingToast) existingToast.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'ghost-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(139, 0, 0, 0.9);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.9rem;
+        z-index: 10000;
+        animation: fadeInOut 3s forwards;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        max-width: 90%;
+        text-align: center;
+    `;
+
+    // Add animation keyframes if not exists
+    if (!document.querySelector('#toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'toast-styles';
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+                10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Show mobile help on first camera activation
+let hasShownMobileHelp = false;
+function showMobileHelpIfNeeded() {
+    if (window.innerWidth < 768 && !hasShownMobileHelp) {
+        hasShownMobileHelp = true;
+        setTimeout(() => {
+            showToast('👃 Move your nose to control cursor');
+            setTimeout(() => {
+                showToast('👆 Or point with your finger');
+            }, 3500);
+        }, 1000);
+    }
 }
 
 // On Boot: Show Ghost cursor controlled by mouse, keep camera off

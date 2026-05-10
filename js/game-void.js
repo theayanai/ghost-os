@@ -297,20 +297,34 @@ function spawnAnomaly() {
     monsterPan.positionX.value = monsterPosX * 5;
 
     const stagePressure = currentStage * 0.08;
-    const widthScale = Math.max(0.6, 1 - stagePressure);
-    const heightScale = Math.max(0.65, 1 - stagePressure * 0.7);
-    anomalyBtn.style.width = `${Math.max(58, 80 * widthScale)}px`;
-    anomalyBtn.style.height = `${Math.max(90, 120 * heightScale)}px`;
+    const isMobile = window.innerWidth < 768;
+
+    // Adjust button size based on screen size
+    const widthScale = isMobile ? 0.8 : Math.max(0.6, 1 - stagePressure);
+    const heightScale = isMobile ? 0.85 : Math.max(0.65, 1 - stagePressure * 0.7);
+
+    const baseWidth = isMobile ? 70 : 80;
+    const baseHeight = isMobile ? 100 : 120;
+
+    anomalyBtn.style.width = `${Math.max(baseWidth * widthScale, 50)}px`;
+    anomalyBtn.style.height = `${Math.max(baseHeight * heightScale, 70)}px`;
 
     let safeX;
     let safeY = (Math.random() * 70 + 15);
-    if (safeY > 40 && safeY < 60) safeY = Math.random() > 0.5 ? 20 : 80;
+
+    // On mobile, keep buttons away from edges for better touch access
+    if (isMobile) {
+        safeY = (Math.random() * 60 + 20);
+        if (safeY > 35 && safeY < 65) safeY = Math.random() > 0.5 ? 25 : 75;
+    } else {
+        if (safeY > 40 && safeY < 60) safeY = Math.random() > 0.5 ? 20 : 80;
+    }
 
     if (monsterPosX === 1) {
-        safeX = `${Math.random() * 20 + 5}%`;
+        safeX = isMobile ? `${Math.random() * 15 + 5}%` : `${Math.random() * 20 + 5}%`;
         vignette.style.background = 'radial-gradient(circle at 90% 50%, transparent 20%, rgba(139,0,0,0.55) 50%, #000 95%)';
     } else {
-        safeX = `${Math.random() * 20 + 75}%`;
+        safeX = isMobile ? `${Math.random() * 15 + 80}%` : `${Math.random() * 20 + 75}%`;
         vignette.style.background = 'radial-gradient(circle at 10% 50%, transparent 20%, rgba(139,0,0,0.55) 50%, #000 95%)';
     }
 
@@ -403,18 +417,22 @@ function voidLoop() {
             const targetY = rect.top + (rect.height / 2);
             const dist = Math.sqrt(Math.pow(window.ghostX - targetX, 2) + Math.pow(window.ghostY - targetY, 2));
 
+            // Adjust distance thresholds for mobile
+            const isMobile = window.innerWidth < 768;
+            const scale = isMobile ? 0.6 : 1;
+
             let pText;
             let pColor;
-            if (dist > 500) {
+            if (dist > 500 * scale) {
                 pText = 'VERY FAR';
                 pColor = '#00ffff';
-            } else if (dist > 250) {
+            } else if (dist > 250 * scale) {
                 pText = 'FAR';
                 pColor = '#0088ff';
-            } else if (dist > 120) {
+            } else if (dist > 120 * scale) {
                 pText = 'CLOSING IN';
                 pColor = '#ffff00';
-            } else if (dist > 60) {
+            } else if (dist > 60 * scale) {
                 pText = 'NEAR';
                 pColor = '#ff8800';
             } else {
@@ -433,11 +451,21 @@ function voidLoop() {
             const btnY = rect.top + (rect.height / 2);
             const distToBtn = Math.sqrt(Math.pow(window.ghostX - btnX, 2) + Math.pow(window.ghostY - btnY, 2));
 
-            if (distToBtn < 200) {
+            // Adjust distance threshold for mobile
+            const isMobile = window.innerWidth < 768;
+            const threshold = isMobile ? 150 : 200;
+
+            if (distToBtn < threshold) {
                 if (!evadeStartTime) evadeStartTime = audioCtx.currentTime;
 
                 if (audioCtx.currentTime - evadeStartTime < 2.0) {
-                    const candidates = [
+                    // Adjust candidate positions for mobile
+                    const candidates = isMobile ? [
+                        { x: 15, y: 25 },
+                        { x: 15, y: 75 },
+                        { x: 85, y: 25 },
+                        { x: 85, y: 75 },
+                    ] : [
                         { x: 10, y: 20 },
                         { x: 10, y: 80 },
                         { x: 90, y: 20 },
