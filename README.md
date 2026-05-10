@@ -19,6 +19,8 @@ A browser-based, hands-free operating system controlled entirely by your face an
 ---
 
 ## 📸 Application Preview  
+<img width="1915" height="885" alt="image" src="https://github.com/user-attachments/assets/a308f9c2-1887-4669-b070-06f6faa939de" />
+
 
 ### 🎛️ The Nexus Hub  
 - Glitch-art aesthetic  
