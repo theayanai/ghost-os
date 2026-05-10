@@ -47,7 +47,7 @@ Because GHOST_OS is a hands-free experience, standard mouse clicks are disabled 
 * **Tracking Modes:** * **Nose Tracking (Default):** Move your head to steer the cursor.
   * **Finger Tracking:** Click "Switch to FINGER Tracking". Hold up an open hand, then **curl your middle, ring, and pinky fingers down** to make a pointing gesture. The AI will instantly lock onto your index fingertip.
 * **The Studio:** Look **Left/Right** to change the pitch (notes). Look **Up/Down** to change the filter (muffled to sharp). Stare at an instrument to toggle the beat.
-* **The Void:** Use your cursor as a radar. Look away from the invisible monster to save your sanity. Listen to the heartbeat to gauge distance. Find the invisible doors using the Hot/Cold proximity text.
+* **The Void:** Use your cursor as a radar. Look away from the invisible monster to save your sanity. Listen to the heartbeat to gauge distance. Find the invisible doors using the hint.
 
 ---
 
