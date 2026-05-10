@@ -18,22 +18,31 @@ let isCameraActive = false;
 let isAITracking = false;   // True when AI actively sees face or pointing finger
 
 // ============================================================
-// 🖱️ BULLETPROOF MOUSE FALLBACK 🖱️
+// 🖱️ BULLETPROOF MOUSE & TOUCH FALLBACK 🖱️
 // ============================================================
-// If the AI is not actively overriding the cursor, the native mouse takes over completely!
+// Desktop Mouse Fallback
 document.addEventListener('mousemove', (e) => {
     if (!isAITracking) {
         window.ghostX = e.clientX;
         window.ghostY = e.clientY;
         ghostCursor.style.left = window.ghostX + 'px';
         ghostCursor.style.top = window.ghostY + 'px';
-        
-        // Ensure the ghost cursor is visible
-        if (ghostCursor.style.opacity === '0' || ghostCursor.style.display === 'none') {
-            showGhostCursor();
-        }
+        if (ghostCursor.style.opacity === '0' || ghostCursor.style.display === 'none') showGhostCursor();
     }
 });
+
+// Mobile Touch Drag Fallback
+document.addEventListener('touchmove', (e) => {
+    if (!isAITracking && e.touches.length > 0) {
+        // Prevent screen scrolling while dragging the cursor
+        e.preventDefault(); 
+        window.ghostX = e.touches[0].clientX;
+        window.ghostY = e.touches[0].clientY;
+        ghostCursor.style.left = window.ghostX + 'px';
+        ghostCursor.style.top = window.ghostY + 'px';
+        if (ghostCursor.style.opacity === '0' || ghostCursor.style.display === 'none') showGhostCursor();
+    }
+}, { passive: false });
 
 // ============================================================
 // GESTURE MATH (ULTRA-STABLE)

@@ -916,3 +916,78 @@ body::after {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
+
+/* =========================================
+   📱 EXTREME MOBILE REFINEMENT & UX
+   ========================================= */
+
+@media screen and (max-width: 850px) {
+    /* 1. Fix Button Overlaps & Stack the Hub */
+    #view-hub .glitch-container,
+    #view-hub div {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 15px !important;
+        width: 100%;
+    }
+
+    .ghost-btn {
+        width: 90% !important;
+        max-width: 350px;
+        font-size: 1rem !important;
+        padding: 15px 10px !important;
+        margin: 0 auto;
+        white-space: normal !important; /* Let long text wrap instead of overflowing */
+    }
+
+    /* 2. Shrink Title & Layouts */
+    .glitch-title { font-size: 2.5rem !important; }
+    h2, h3 { font-size: 1.5rem !important; text-align: center; }
+    
+    /* 3. Terminal Fixes */
+    #terminal-output {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+    .terminal-input-line { font-size: 0.8rem; }
+    #terminal-input { width: 60%; }
+
+    /* 4. Fix Video Feed floating off screen */
+    #input_video.show-feed {
+        width: 150px;
+        height: auto;
+        bottom: 10px;
+        right: 10px;
+    }
+}
+
+@media screen and (max-width: 850px) and (orientation: portrait) {
+    /* When user is in portrait mode, hide the content of these views */
+    #view-studio > *,
+    #void-ui > *,
+    #void-intro > * {
+        display: none !important;
+    }
+
+    /* Inject the "Rotate Device" Screen */
+    #view-studio::before,
+    #void-ui::before,
+    #void-intro::before {
+        content: "⚠️ ROTATE DEVICE ⚠️ \A\A The Void & Studio require landscape orientation to calculate spatial math.";
+        white-space: pre-wrap;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: #050000;
+        color: red;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-family: 'Nosifer', cursive;
+        font-size: 1.2rem;
+        z-index: 999999;
+        padding: 20px;
+        box-sizing: border-box;
+        animation: glitch-anim 2s infinite;
+    }
+}
